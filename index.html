@@ -108,10 +108,10 @@
 
   h1{
     font-family:'DOSPilgi', monospace;
-    font-size:28px;
-    line-height:1.7;
+    font-size:34px;
+    line-height:1.6;
     text-align:center;
-    margin:0 0 14px;
+    margin:-20px 0 14px;
     color:var(--red);
     letter-spacing:0.3px;
     animation:titleBounce 2.2s ease-in-out infinite;
@@ -181,10 +181,10 @@
     font-family:'DOSPilgi', monospace;
     font-size:20px;
     color:#ffffff;
-    background:linear-gradient(135deg, #ff5a52, var(--red) 55%, var(--red-dim));
-    border:none;
-    border-radius:8px;
-    padding:16px 42px;
+    background:var(--red);
+    border:3px solid var(--ink);
+    border-radius:0;
+    padding:15px 40px;
     cursor:pointer;
     box-shadow:4px 4px 0 var(--ink);
     text-shadow:1.5px 1.5px 0 rgba(0,0,0,0.35);
@@ -211,19 +211,19 @@
     transition:width .3s steps(6);
   }
   .progress-label{
-    font-size:10.5px; color:var(--grey); margin-top:7px; text-align:right;
+    font-size:14px; color:var(--grey); margin-top:7px; text-align:right;
     letter-spacing:0.3px;
   }
   .q-num{
     font-family:'DOSPilgi', monospace;
     color:var(--red);
-    font-size:22px;
+    font-size:28px;
     margin-bottom:10px;
     letter-spacing:0.3px;
   }
   .q-text{
-    font-size:14.5px;
-    line-height:1.9;
+    font-size:18px;
+    line-height:1.8;
     margin-bottom:24px;
     color:var(--ink);
     word-break:keep-all;
@@ -270,10 +270,10 @@
 
   /* --- result screen --- */
   #screen-result{ display:none; flex:1; flex-direction:column; align-items:center; text-align:center; position:relative; }
-  .deco.r1{ top:0%; left:4%; font-size:18px; animation-delay:.2s; }
-  .deco.r2{ top:4%; right:5%; font-size:22px; animation-delay:.8s; }
-  .deco.r3{ bottom:8%; left:6%; font-size:18px; animation-delay:1.3s; }
-  .deco.r4{ bottom:2%; right:8%; font-size:16px; animation-delay:1.8s; }
+  .deco.r1{ top:0%; left:4%; font-size:18px; animation-delay:.2s; z-index:95; }
+  .deco.r2{ top:4%; right:5%; font-size:22px; animation-delay:.8s; z-index:95; }
+  .deco.r3{ bottom:22%; left:6%; font-size:18px; animation-delay:1.3s; }
+  .deco.r4{ bottom:16%; right:8%; font-size:16px; animation-delay:1.8s; }
   .reveal-card{
     width:100%;
     max-width:360px;
@@ -302,6 +302,7 @@
     justify-content:center;
     overflow:visible;
     position:relative;
+    z-index:60;
     animation:frameglow 2s ease-in-out infinite;
   }
   @keyframes frameglow{
@@ -345,15 +346,15 @@
   .reveal-eyebrow{
     font-family:'DOSPilgi', monospace;
     color:var(--grey);
-    font-size:20px;
-    margin-bottom:9px;
+    font-size:26px;
+    margin-bottom:14px;
     letter-spacing:0.5px;
   }
   .reveal-name{
     font-family:'DOSPilgi', monospace;
     font-size:28px;
     color:var(--red);
-    margin:4px 0 4px;
+    margin:14px 0 4px;
   }
   .tie-note{
     font-size:10.5px;
@@ -426,13 +427,13 @@
     <span class="deco r3">☆</span>
     <span class="deco r4">♪</span>
     <div class="reveal-card">
+      <div class="reveal-eyebrow" id="resultTag">RESULT</div>
       <div class="photo-frame" id="photoFrame">
         <span class="sticker sticker-tl">🥟</span>
         <span class="sticker sticker-bl" id="stickerAnimal"></span>
         <span class="placeholder" id="photoPlaceholder">PHOTO<br>HERE</span>
         <img id="resultPhoto" style="display:none;" alt="">
       </div>
-      <div class="reveal-eyebrow" id="resultTag">RESULT</div>
       <div class="reveal-name" id="resultName">황필</div>
       <div class="tie-note" id="tieNote"></div>
     </div>
