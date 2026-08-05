@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>내 취향의 SKZ CP는?</title>
+<title>슼페스는?</title>
 <style>
   @font-face{
     font-family:'DOSPilgi';
@@ -152,6 +152,10 @@
   .deco.d2{ top:8%; right:6%; font-size:18px; animation-delay:.6s; }
   .deco.d3{ bottom:16%; left:5%; font-size:18px; animation-delay:1.1s; }
   .deco.d4{ bottom:6%; right:10%; font-size:24px; animation-delay:1.7s; }
+  .deco.d5{ top:22%; left:2%; font-size:16px; animation-delay:.3s; }
+  .deco.d6{ top:28%; right:3%; font-size:20px; animation-delay:.9s; }
+  .deco.d7{ bottom:30%; right:4%; font-size:16px; animation-delay:1.4s; }
+  .deco.d8{ bottom:40%; left:3%; font-size:20px; animation-delay:2s; }
   @keyframes float{
     0%, 100%{ transform:translateY(0); }
     50%{ transform:translateY(-8px); }
@@ -175,19 +179,22 @@
 
   .btn{
     font-family:'DOSPilgi', monospace;
-    background:var(--red);
+    font-size:20px;
+    color:#ffffff;
+    background:linear-gradient(135deg, #ff5a52, var(--red) 55%, var(--red-dim));
     border:none;
-    border-radius:0;
-    padding:13px 28px;
+    border-radius:8px;
+    padding:16px 42px;
     cursor:pointer;
     box-shadow:4px 4px 0 var(--ink);
+    text-shadow:1.5px 1.5px 0 rgba(0,0,0,0.35);
     transition:transform .08s ease, box-shadow .08s ease;
-    letter-spacing:0.3px;
+    letter-spacing:0.5px;
     animation:pulse 1.8s ease-in-out infinite;
   }
   @keyframes pulse{
     0%, 100%{ box-shadow:4px 4px 0 var(--ink); }
-    50%{ box-shadow:4px 4px 0 var(--ink), 0 0 12px 1px rgba(232,53,47,0.55); }
+    50%{ box-shadow:4px 4px 0 var(--ink), 0 0 16px 3px rgba(232,53,47,0.6); }
   }
   .btn:hover{ transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--ink); }
   .btn:active{ transform:translate(3px,3px); box-shadow:1px 1px 0 var(--ink); }
@@ -262,7 +269,11 @@
   }
 
   /* --- result screen --- */
-  #screen-result{ display:none; flex:1; flex-direction:column; align-items:center; text-align:center; }
+  #screen-result{ display:none; flex:1; flex-direction:column; align-items:center; text-align:center; position:relative; }
+  .deco.r1{ top:0%; left:4%; font-size:18px; animation-delay:.2s; }
+  .deco.r2{ top:4%; right:5%; font-size:22px; animation-delay:.8s; }
+  .deco.r3{ bottom:8%; left:6%; font-size:18px; animation-delay:1.3s; }
+  .deco.r4{ bottom:2%; right:8%; font-size:16px; animation-delay:1.8s; }
   .reveal-card{
     width:100%;
     max-width:360px;
@@ -383,7 +394,11 @@
     <span class="deco d2">♥</span>
     <span class="deco d3">♪</span>
     <span class="deco d4">★</span>
-    <h1>내 취향의<br>SKZ CP는?</h1>
+    <span class="deco d5">✦</span>
+    <span class="deco d6">♫</span>
+    <span class="deco d7">☆</span>
+    <span class="deco d8">✧</span>
+    <h1>내 취향의<br>슼페스는?</h1>
     <div class="sprite-box">🧭</div>
     <button class="btn" onclick="startQuiz()">START</button>
     <p class="disclaimer">만든 이의 주관적 캐해 포함<br>틀릴 시: 미안해요😅</p>
@@ -406,6 +421,10 @@
 
   <!-- RESULT -->
   <div id="screen-result">
+    <span class="deco r1">✦</span>
+    <span class="deco r2">♥</span>
+    <span class="deco r3">☆</span>
+    <span class="deco r4">♪</span>
     <div class="reveal-card">
       <div class="photo-frame" id="photoFrame">
         <span class="sticker sticker-tl">🥟</span>
