@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>내 취향의 씨피는?</title>
+<title>내 취향의 SKZ CP는?</title>
 <style>
   @font-face{
     font-family:'DOSPilgi';
@@ -41,6 +42,10 @@
     justify-content:center;
     align-items:flex-start;
     padding:18px 0;
+    -webkit-text-size-adjust:100%;
+    text-size-adjust:100%;
+    word-break:keep-all;
+    overflow-wrap:break-word;
   }
   .stage{
     width:100%;
@@ -104,26 +109,26 @@
 
   h1{
     font-family:'DOSPilgi', monospace;
-    font-size:20px;
-    line-height:1.8;
+    font-size:28px;
+    line-height:1.7;
     text-align:center;
     margin:0 0 14px;
     color:var(--red);
-    letter-spacing:1px;
-    animation:flicker 3.2s infinite;
+    letter-spacing:0.3px;
+    animation:titleBounce 2.2s ease-in-out infinite;
   }
-  @keyframes flicker{
-    0%, 92%, 100%{ opacity:1; }
-    94%{ opacity:0.55; }
-    96%{ opacity:1; }
+  @keyframes titleBounce{
+    0%, 100%{ transform:translateY(0) rotate(0deg); }
+    25%{ transform:translateY(-5px) rotate(-1.5deg); }
+    75%{ transform:translateY(2px) rotate(1.5deg); }
   }
   .disclaimer{
     text-align:center;
     color:var(--grey);
     font-size:10px;
     line-height:1.9;
-    margin:0 0 28px;
-    letter-spacing:0.5px;
+    margin:22px 0 0;
+    letter-spacing:0.2px;
   }
 
   /* --- start screen --- */
@@ -139,15 +144,15 @@
   }
   .deco{
     position:absolute;
-    font-size:15px;
+    font-size:24px;
     color:var(--red);
     opacity:0.85;
     animation:float 2.6s ease-in-out infinite;
   }
   .deco.d1{ top:2%; left:8%; animation-delay:0s; }
-  .deco.d2{ top:8%; right:6%; font-size:11px; animation-delay:.6s; }
-  .deco.d3{ bottom:16%; left:5%; font-size:11px; animation-delay:1.1s; }
-  .deco.d4{ bottom:6%; right:10%; font-size:15px; animation-delay:1.7s; }
+  .deco.d2{ top:8%; right:6%; font-size:18px; animation-delay:.6s; }
+  .deco.d3{ bottom:16%; left:5%; font-size:18px; animation-delay:1.1s; }
+  .deco.d4{ bottom:6%; right:10%; font-size:24px; animation-delay:1.7s; }
   @keyframes float{
     0%, 100%{ transform:translateY(0); }
     50%{ transform:translateY(-8px); }
@@ -178,7 +183,7 @@
     cursor:pointer;
     box-shadow:4px 4px 0 var(--ink);
     transition:transform .08s ease, box-shadow .08s ease;
-    letter-spacing:1px;
+    letter-spacing:0.3px;
     animation:pulse 1.8s ease-in-out infinite;
   }
   @keyframes pulse{
@@ -201,20 +206,21 @@
   }
   .progress-label{
     font-size:10.5px; color:var(--grey); margin-top:7px; text-align:right;
-    letter-spacing:1px;
+    letter-spacing:0.3px;
   }
   .q-num{
     font-family:'DOSPilgi', monospace;
     color:var(--red);
     font-size:22px;
     margin-bottom:10px;
-    letter-spacing:1px;
+    letter-spacing:0.3px;
   }
   .q-text{
     font-size:14.5px;
     line-height:1.9;
     margin-bottom:24px;
     color:var(--ink);
+    word-break:keep-all;
   }
   .options{ display:flex; flex-direction:column; gap:12px; }
   .opt{
@@ -227,6 +233,7 @@
     font-family:'Mona10', monospace;
     line-height:1.7;
     cursor:pointer;
+    word-break:keep-all;
     transition:border-color .1s ease, background .1s ease;
   }
   .opt:hover{
@@ -301,7 +308,7 @@
     color:var(--red);
     font-size:12px;
     line-height:1.9;
-    letter-spacing:1px;
+    letter-spacing:0.3px;
   }
   .sticker{
     position:absolute;
@@ -326,22 +333,17 @@
     50%{ transform:scale(1) rotate(calc(var(--rot) * -1)); }
   }
   .reveal-eyebrow{
+    font-family:'DOSPilgi', monospace;
     color:var(--grey);
-    font-size:10.5px;
+    font-size:20px;
     margin-bottom:9px;
-    letter-spacing:1px;
+    letter-spacing:0.5px;
   }
   .reveal-name{
     font-family:'DOSPilgi', monospace;
     font-size:28px;
     color:var(--red);
-    margin:4px 0 15px;
-  }
-  .reveal-desc{
-    font-size:12px;
-    line-height:2;
-    color:var(--ink);
-    white-space:pre-line;
+    margin:4px 0 4px;
   }
   .tie-note{
     font-size:10.5px;
@@ -349,6 +351,15 @@
     margin-top:14px;
   }
   .result-actions{ margin-top:22px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+
+  /* --- 좁은 화면 보정 --- */
+  @media (max-width:360px){
+    .screen-content{ padding:16px 14px 8px; }
+    h1{ font-size:24px; }
+    .photo-frame{ width:180px; height:180px; }
+    .sticker{ font-size:44px; }
+    .reveal-name{ font-size:24px; }
+  }
 
   /* --- 결과창 파티클 --- */
 </style>
@@ -373,10 +384,10 @@
     <span class="deco d2">♥</span>
     <span class="deco d3">♪</span>
     <span class="deco d4">★</span>
-    <h1>내 취향의<br>SKZ 씨피는?</h1>
-    <p class="disclaimer">만든 이의 주관적 캐해 포함<br>틀릴 시: 미안해요😅</p>
+    <h1>내 취향의<br>SKZ CP는?</h1>
     <div class="sprite-box">🧭</div>
     <button class="btn" onclick="startQuiz()">START</button>
+    <p class="disclaimer">만든 이의 주관적 캐해 포함<br>틀릴 시: 미안해요😅</p>
   </div>
 
   <!-- QUIZ -->
@@ -405,7 +416,6 @@
       </div>
       <div class="reveal-eyebrow" id="resultTag">RESULT</div>
       <div class="reveal-name" id="resultName">황필</div>
-      <div class="reveal-desc" id="resultDesc"></div>
       <div class="tie-note" id="tieNote"></div>
     </div>
     <div class="result-actions">
@@ -475,13 +485,13 @@ const vibeMap = {
 function findTieBreakQuestion(cpA, cpB){
   const bank = pairQuestionBank[cpA+"-"+cpB] || pairQuestionBank[cpB+"-"+cpA];
   if(bank){
-    return { text: bank.text, options: bank.options.map(o => ({ label: o.label, tags: [t(o.cp,1)] })) };
+    return { text: bank.text, options: bank.options.map(o => ({ label: o.label, tags: [t(o.cp,5)] })) };
   }
   return {
     text: "그래도 좀 더 끌리는 쪽은?",
     options: [
-      { label: vibeMap[cpA], tags: [t(cpA,1)] },
-      { label: vibeMap[cpB], tags: [t(cpB,1)] },
+      { label: vibeMap[cpA], tags: [t(cpA,5)] },
+      { label: vibeMap[cpB], tags: [t(cpB,5)] },
     ]
   };
 }
@@ -491,7 +501,7 @@ function findSideOf(q, cp){
 }
 
 function pickDecisiveQuestion(cpA, cpB){
-  // 1순위: 이지선다 풀 중에서 두 씨피가 서로 다른 선택지로 갈리는 문항 찾기
+  // 1순위: 이지선다 풀 중에서 두 CP가 서로 다른 선택지로 갈리는 문항 찾기
   for(const q of candidateTieQuestions){
     const sideA = findSideOf(q, cpA);
     const sideB = findSideOf(q, cpB);
@@ -522,7 +532,7 @@ function tally(ansArr, qArr){
 
 const questions = [
   {
-    text: "선호하는 씨피의 분위기는?",
+    text: "선호하는 CP의 분위기는?",
     options: [
       { label: "직진순애러브", tags: [t("황필",5), t("현양",5), t("황승",5)] },
       { label: "달콤살벌코미디", tags: [t("황밍",5), t("황창",5), t("황쳌",3)] },
@@ -531,7 +541,7 @@ const questions = [
     ]
   },
   {
-    text: "선호하는 씨피의 나이는?",
+    text: "선호하는 CP의 나이는?",
     options: [
       { label: "연하 × 연상", tags: [t("황밍",4), t("황창",4), t("황캥",4)] },
       { label: "동갑", tags: [t("황승",4), t("황쳌",4), t("황필",4)] },
@@ -557,7 +567,7 @@ const questions = [
     ]
   },
   {
-    text: "선호하는 모먼트는?",
+    text: "선호하는 CP 모먼트는?",
     options: [
       { label: "무심한 다정함", tags: [t("황필",2), t("황승",1), t("황창",2), t("황밍",1)] },
       { label: "질투하는 모습", tags: [t("현양",2), t("황필",3), t("황캥",3)] },
@@ -575,7 +585,7 @@ const questions = [
     ]
   },
   {
-    text: "씨피의 평소 모습은?",
+    text: "CP의 평소 모습은?",
     options: [
       { label: "꽁냥꽁냥 붙어다님", tags: [t("황필",1), t("현양",2), t("황창",3), t("황승",3), t("황밍",3)] },
       { label: "붙으면 티격대는데 떨어지진 않음", tags: [t("황승",1), t("황창",1)] },
@@ -593,9 +603,9 @@ const questions = [
     ]
   },
   {
-    text: "싸우고 나서 왼의 반응은?",
+    text: "싸우고 나서 른의 반응은?",
     options: [
-      { label: "일단 붙잡고 절대 안 놓음, 말이 아니라 몸으로", tags: [t("현양",1), t("황캥",3)] },
+      { label: "일단 붙잡고 안 놓아줌, 말이 아니라 몸으로", tags: [t("현양",1), t("황캥",3)] },
       { label: "삐져서 은근히 풀리길 기다림", tags: [t("황쳌",1), t("황밍",3)] },
       { label: "\"우리 얘기 좀 해\" 정색하고 대화 시도", tags: [t("황필",1), t("황창",1), t("현양",2)] },
       { label: "일단 잠수, 정리할 시간 필요", tags: [t("황밍",1), t("황승",1), t("황캥",1)] },
@@ -603,41 +613,41 @@ const questions = [
   },
 ];
 
-// 동점일 때 결정타로 쓰일 이지선다 후보 풀 (10번째 문항용)
+// 동점일 때 결정타로 쓰일 이지선다 후보 풀 (10번째 문항용, 배점 1.5점)
 const candidateTieQuestions = [
   {
     text: "둘의 연애는?",
     options: [
-      { label: "친구 같은 연애", tags: [t("황승",1), t("황쳌",1), t("황필",1)] },
-      { label: "이미 부부", tags: [t("황캥",1), t("황창",1), t("황밍",1)] },
+      { label: "친구 같은 연애", tags: [t("황승",5), t("황쳌",5), t("황필",5)] },
+      { label: "이미 부부", tags: [t("황캥",5), t("황창",5), t("황밍",5)] },
     ]
   },
   {
     text: "스킨십에 더 적극적인 쪽은?",
     options: [
-      { label: "왼", tags: [t("현양",1), t("황승",1)] },
-      { label: "른", tags: [t("황밍",1), t("황창",1), t("황필",1)] },
+      { label: "왼", tags: [t("현양",5), t("황승",5)] },
+      { label: "른", tags: [t("황밍",5), t("황창",5), t("황필",5)] },
     ]
   },
   {
     text: "둘의 연락 스타일은?",
     options: [
-      { label: "시시콜콜 자주 한다", tags: [t("황창",1), t("황밍",1), t("황승",1)] },
-      { label: "필요할 때 주로 한다", tags: [t("현양",1), t("황캥",1)] },
+      { label: "시시콜콜 자주 한다", tags: [t("황창",5), t("황밍",5), t("황승",5)] },
+      { label: "필요할 때 주로 한다", tags: [t("현양",5), t("황캥",5)] },
     ]
   },
   {
     text: "른이 질투가 나면?",
     options: [
-      { label: "티를 낸다", tags: [t("현양",1), t("황밍",1), t("황창",1), t("황쳌",1)] },
-      { label: "숨긴다", tags: [t("황필",1), t("황캥",1), t("황승",1)] },
+      { label: "티를 낸다", tags: [t("현양",5), t("황밍",5), t("황창",5), t("황쳌",5)] },
+      { label: "숨긴다", tags: [t("황필",5), t("황캥",5), t("황승",5)] },
     ]
   },
   {
     text: "주변 사람들이 보는 둘은?",
     options: [
-      { label: "친구 같아 보인다", tags: [t("황승",1), t("황쳌",1), t("황밍",1)] },
-      { label: "연인 티가 너무 난다", tags: [t("황창",1), t("황필",1), t("현양",1)] },
+      { label: "친구 같아 보인다", tags: [t("황승",5), t("황쳌",5), t("황밍",5)] },
+      { label: "연인 티가 너무 난다", tags: [t("황창",5), t("황필",5), t("현양",5)] },
     ]
   },
 ];
@@ -672,6 +682,17 @@ let scores = {};
 let activeQuestions = [];
 const BASE_COUNT = questions.length; // 9
 const TOTAL_DISPLAY = BASE_COUNT + 1; // 결정타 문항이 항상 붙으므로 10
+const MAX_QUESTIONS = 14; // 동점 연장 시 무한 루프 방지용 안전장치
+
+function appendDecisiveQuestion(){
+  const s = tally(answers, activeQuestions);
+  const sorted = Object.entries(s).sort((a,b) => b[1]-a[1]);
+  const [firstCp] = sorted[0];
+  const [secondCp] = sorted[1];
+  const q = pickDecisiveQuestion(firstCp, secondCp);
+  q.decisiveFor = [firstCp, secondCp]; // 이 문항은 1·2위 두 CP만 득점
+  activeQuestions.push(q);
+}
 
 function startQuiz(){
   document.getElementById('screen-start').style.display = 'none';
@@ -684,7 +705,7 @@ function startQuiz(){
 
 function renderQuestion(){
   const q = activeQuestions[current];
-  const total = TOTAL_DISPLAY; // 결정타 문항이 항상 붙으므로 총 10문항 고정 표시
+  const total = Math.max(TOTAL_DISPLAY, activeQuestions.length); // 동점 연장 시에도 자연스럽게 표시
   document.getElementById('qNum').textContent = 'Q' + (current+1);
   document.getElementById('qText').textContent = q.text;
   document.getElementById('progressFill').style.width = ((current)/total*100) + '%';
@@ -709,13 +730,18 @@ function selectOption(i){
 
   // 기본 9문항이 끝나면 매번 1·2위 결정타 문항을 10번째로 추가
   if(current === BASE_COUNT && activeQuestions.length === BASE_COUNT){
-    const prelim = tally(answers.slice(0, BASE_COUNT), questions);
-    const sorted = Object.entries(prelim).sort((a,b) => b[1]-a[1]);
-    const [firstCp] = sorted[0];
-    const [secondCp] = sorted[1];
-    const q = pickDecisiveQuestion(firstCp, secondCp);
-    q.decisiveFor = [firstCp, secondCp]; // 이 문항은 1·2위 두 씨피만 득점
-    activeQuestions.push(q);
+    appendDecisiveQuestion();
+  } else if(
+    current === activeQuestions.length &&
+    activeQuestions.length > BASE_COUNT &&
+    activeQuestions.length < MAX_QUESTIONS
+  ){
+    // 결정타 문항까지 다 풀었는데도 여전히 동점이면 한 문항 더 연장
+    const s = tally(answers, activeQuestions);
+    const sorted = Object.entries(s).sort((a,b) => b[1]-a[1]);
+    if(sorted[0][1] === sorted[1][1]){
+      appendDecisiveQuestion();
+    }
   }
 
   if(current < activeQuestions.length){
@@ -751,7 +777,6 @@ function showResult(){
   const winners = entries.filter(e => e[1] === topScore).map(e => e[0]);
 
   document.getElementById('resultName').textContent = winners.join(' & ');
-  document.getElementById('resultDesc').textContent = cpInfo[winners[0]].desc;
 
   const img = document.getElementById('resultPhoto');
   const placeholder = document.getElementById('photoPlaceholder');
@@ -762,12 +787,12 @@ function showResult(){
   img.src = 'SKZCP/Image/' + (imageCodeMap[winners[0]] || winners[0]) + '.jpg';
 
   document.getElementById('tieNote').textContent = winners.length > 1
-    ? '동점 씨피가 있어서 같이 뽑혔어요 (' + winners.join(', ') + ')'
+    ? '동점 CP가 있어서 같이 뽑혔어요 (' + winners.join(', ') + ')'
     : '';
 
   const animalSticker = document.getElementById('stickerAnimal');
   const emojiForWinner = (animalMap[winners[0]] || ['✨'])[0];
-  // 재애니메이션을 위해 DOM에서 잠깐 떼었다 다시 붙임 (같은 씨피가 다시 나와도 팝인 재생)
+  // 재애니메이션을 위해 DOM에서 잠깐 떼었다 다시 붙임 (같은 CP가 다시 나와도 팝인 재생)
   animalSticker.textContent = emojiForWinner;
   animalSticker.style.animation = 'none';
   void animalSticker.offsetWidth;
