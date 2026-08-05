@@ -30,6 +30,13 @@
     tap-highlight-color:transparent;
   }
   button, a, .opt{ outline:none; -webkit-user-select:none; user-select:none; }
+  body, .stage, .stage *{
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
+    -webkit-touch-callout:none;
+  }
   button:focus, .opt:focus, a:focus{ outline:none; }
   body{
     margin:0;
@@ -270,8 +277,8 @@
 
   /* --- result screen --- */
   #screen-result{ display:none; flex:1; flex-direction:column; align-items:center; text-align:center; position:relative; }
-  .deco.r1{ top:14%; left:4%; font-size:18px; animation-delay:.2s; z-index:95; }
-  .deco.r2{ top:16%; right:5%; font-size:22px; animation-delay:.8s; z-index:95; }
+  .deco.r1{ top:5%; left:4%; font-size:18px; animation-delay:.2s; z-index:95; }
+  .deco.r2{ top:9%; right:5%; font-size:22px; animation-delay:.8s; z-index:95; }
   .deco.r3{ bottom:22%; left:6%; font-size:18px; animation-delay:1.3s; }
   .deco.r4{ bottom:16%; right:8%; font-size:16px; animation-delay:1.8s; }
   .reveal-card{
@@ -401,7 +408,7 @@
     <span class="deco d8">✧</span>
     <h1>내 취향의<br>슼페스는?</h1>
     <div class="sprite-box">🧭</div>
-    <button class="btn" onclick="startQuiz()">START</button>
+    <button class="btn" onclick="startQuiz()">시작</button>
     <p class="disclaimer">만든 이의 주관적 캐해 포함<br>틀릴 시: 미안해요😅</p>
   </div>
 
@@ -438,7 +445,7 @@
       <div class="tie-note" id="tieNote"></div>
     </div>
     <div class="result-actions">
-      <button class="btn" onclick="restart()">RETRY</button>
+      <button class="btn" onclick="restart()">다시하기</button>
     </div>
   </div>
 
@@ -447,6 +454,13 @@
 </div>
 
 <script>
+// 우클릭 / 복사 / 드래그 방지
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('copy', e => e.preventDefault());
+document.addEventListener('cut', e => e.preventDefault());
+document.addEventListener('dragstart', e => e.preventDefault());
+document.addEventListener('selectstart', e => e.preventDefault());
+
 function updateClock(){
   const now = new Date();
   const hh = String(now.getHours()).padStart(2,'0');
