@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>내 취향의 씨피는?</title>
+<style>
+  @font-face{
+    font-family:'DOSPilgi';
+    src:url('SKZCP/Fonts/DOSPilgi.ttf') format('truetype');
+    font-display:swap;
+  }
+  @font-face{
+    font-family:'Mona10';
+    src:url('SKZCP/Fonts/Mona10.ttf') format('truetype');
+    font-display:swap;
+  }
+  :root{
+    --lcd:#dbe3c4;
+    --lcd-dim:#cdd6b4;
+    --panel:#eef1e0;
+    --ink:#333c26;
+    --red:#e8352f;
+    --red-dim:#a52420;
+    --grey:#77805f;
+  }
+  *{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+    tap-highlight-color:transparent;
+  }
+  button, a, .opt{ outline:none; -webkit-user-select:none; user-select:none; }
+  button:focus, .opt:focus, a:focus{ outline:none; }
+  body{
+    margin:0;
+    min-height:100vh;
+    background:linear-gradient(160deg,#a7a7a0,#7c7c74);
+    color:var(--ink);
+    font-family:'Mona10', monospace;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    padding:18px 0;
+  }
+  .stage{
+    width:100%;
+    max-width:480px;
+    min-height:calc(100vh - 36px);
+    background:var(--lcd);
+    border:10px solid var(--ink);
+    border-radius:16px;
+    box-shadow:0 12px 26px rgba(0,0,0,0.35);
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    overflow:hidden;
+  }
+  /* LCD 글라스 반사 + 스캔라인 */
+  .stage::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:
+      linear-gradient(115deg, rgba(255,255,255,0.16) 0%, transparent 30%),
+      repeating-linear-gradient(to bottom, rgba(51,60,38,0.05) 0px, rgba(51,60,38,0.05) 1px, transparent 1px, transparent 3px);
+    z-index:50;
+  }
+
+  /* --- 상태바 (통신사 / 신호 / 배터리 / 시계) --- */
+  .status-bar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:8px 14px;
+    border-bottom:2px solid var(--ink);
+    font-size:10px;
+    letter-spacing:0.5px;
+    color:var(--ink);
+    flex-shrink:0;
+  }
+  .carrier{ display:flex; align-items:center; gap:4px; font-family:'DOSPilgi', monospace; }
+  .status-icons{ display:flex; align-items:center; gap:8px; }
+  .signal-bars{ display:flex; align-items:flex-end; gap:2px; height:9px; }
+  .signal-bars span{ width:3px; background:var(--ink); display:block; }
+  .signal-bars span:nth-child(1){ height:3px; }
+  .signal-bars span:nth-child(2){ height:5px; }
+  .signal-bars span:nth-child(3){ height:7px; }
+  .signal-bars span:nth-child(4){ height:9px; }
+  .battery{ width:18px; height:9px; border:1.5px solid var(--ink); position:relative; }
+  .battery::after{
+    content:''; position:absolute; right:-3px; top:2px; width:2px; height:3px; background:var(--ink);
+  }
+  .battery .fill{ position:absolute; left:1px; top:1px; bottom:1px; width:65%; background:var(--ink); }
+
+  /* --- 화면 콘텐츠 --- */
+  .screen-content{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    padding:20px 18px 10px;
+    position:relative;
+  }
+
+  h1{
+    font-family:'DOSPilgi', monospace;
+    font-size:20px;
+    line-height:1.8;
+    text-align:center;
+    margin:0 0 14px;
+    color:var(--red);
+    letter-spacing:1px;
+    animation:flicker 3.2s infinite;
+  }
+  @keyframes flicker{
+    0%, 92%, 100%{ opacity:1; }
+    94%{ opacity:0.55; }
+    96%{ opacity:1; }
+  }
+  .disclaimer{
+    text-align:center;
+    color:var(--grey);
+    font-size:10px;
+    line-height:1.9;
+    margin:0 0 28px;
+    letter-spacing:0.5px;
+  }
+
+  /* --- start screen --- */
+  #screen-start{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    gap:26px;
+    position:relative;
+  }
+  .deco{
+    position:absolute;
+    font-size:15px;
+    color:var(--red);
+    opacity:0.85;
+    animation:float 2.6s ease-in-out infinite;
+  }
+  .deco.d1{ top:2%; left:8%; animation-delay:0s; }
+  .deco.d2{ top:8%; right:6%; font-size:11px; animation-delay:.6s; }
+  .deco.d3{ bottom:16%; left:5%; font-size:11px; animation-delay:1.1s; }
+  .deco.d4{ bottom:6%; right:10%; font-size:15px; animation-delay:1.7s; }
+  @keyframes float{
+    0%, 100%{ transform:translateY(0); }
+    50%{ transform:translateY(-8px); }
+  }
+  .sprite-box{
+    width:104px;
+    height:104px;
+    background:var(--panel);
+    border:4px solid var(--red);
+    box-shadow:5px 5px 0 var(--ink);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:44px;
+    animation:bob 1.6s ease-in-out infinite;
+  }
+  @keyframes bob{
+    0%, 100%{ transform:translateY(0) rotate(0deg); }
+    50%{ transform:translateY(-7px) rotate(-4deg); }
+  }
+
+  .btn{
+    font-family:'DOSPilgi', monospace;
+    background:var(--red);
+    border:none;
+    border-radius:0;
+    padding:13px 28px;
+    cursor:pointer;
+    box-shadow:4px 4px 0 var(--ink);
+    transition:transform .08s ease, box-shadow .08s ease;
+    letter-spacing:1px;
+    animation:pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse{
+    0%, 100%{ box-shadow:4px 4px 0 var(--ink); }
+    50%{ box-shadow:4px 4px 0 var(--ink), 0 0 12px 1px rgba(232,53,47,0.55); }
+  }
+  .btn:hover{ transform:translate(-2px,-2px); box-shadow:6px 6px 0 var(--ink); }
+  .btn:active{ transform:translate(3px,3px); box-shadow:1px 1px 0 var(--ink); }
+
+  /* --- quiz screen --- */
+  #screen-quiz{ display:none; flex:1; flex-direction:column; }
+  .progress-wrap{ margin-bottom:24px; }
+  .progress-track{
+    height:13px; background:var(--panel); border:3px solid var(--ink); padding:2px;
+  }
+  .progress-fill{
+    height:100%; width:0%;
+    background:repeating-linear-gradient(90deg, var(--red) 0 8px, var(--red-dim) 8px 10px);
+    transition:width .3s steps(6);
+  }
+  .progress-label{
+    font-size:10.5px; color:var(--grey); margin-top:7px; text-align:right;
+    letter-spacing:1px;
+  }
+  .q-num{
+    font-family:'DOSPilgi', monospace;
+    color:var(--red);
+    font-size:22px;
+    margin-bottom:10px;
+    letter-spacing:1px;
+  }
+  .q-text{
+    font-size:14.5px;
+    line-height:1.9;
+    margin-bottom:24px;
+    color:var(--ink);
+  }
+  .options{ display:flex; flex-direction:column; gap:12px; }
+  .opt{
+    text-align:left;
+    background:var(--panel);
+    border:3px solid var(--lcd-dim);
+    border-radius:0;
+    padding:15px 16px;
+    color:var(--ink);
+    font-family:'Mona10', monospace;
+    line-height:1.7;
+    cursor:pointer;
+    transition:border-color .1s ease, background .1s ease;
+  }
+  .opt:hover{
+    border-color:var(--red);
+    background:#f6dbd9;
+  }
+  .opt:active{ background:var(--red); color:var(--panel); }
+  .opt .mark{
+    display:inline-block;
+    width:20px; height:20px;
+    border-radius:0;
+    border:2px solid var(--red);
+    color:var(--red);
+    font-size:10.5px;
+    text-align:center;
+    line-height:18px;
+    margin-right:9px;
+  }
+  .nav-row{
+    margin-top:20px;
+    display:flex;
+    justify-content:space-between;
+  }
+  .link-btn{
+    background:none; border:none; color:var(--grey);
+    font-family:'Mona10', monospace;
+  }
+
+  /* --- result screen --- */
+  #screen-result{ display:none; flex:1; flex-direction:column; align-items:center; text-align:center; }
+  .reveal-card{
+    width:100%;
+    max-width:360px;
+    border-radius:0;
+    border:4px solid var(--red);
+    background:var(--panel);
+    box-shadow:6px 6px 0 var(--ink);
+    padding:24px 20px;
+    margin:6px 0 20px;
+    animation:popin .5s steps(6) both;
+  }
+  @keyframes popin{
+    0%{ opacity:0; transform:scale(0.7); }
+    60%{ opacity:1; transform:scale(1.05); }
+    100%{ opacity:1; transform:scale(1); }
+  }
+  .photo-frame{
+    width:220px;
+    height:220px;
+    margin:0 auto 18px;
+    background:var(--lcd-dim);
+    border:4px solid var(--red);
+    box-shadow:4px 4px 0 var(--ink);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:visible;
+    position:relative;
+    animation:frameglow 2s ease-in-out infinite;
+  }
+  @keyframes frameglow{
+    0%, 100%{ border-color:var(--red); }
+    50%{ border-color:#f28783; }
+  }
+  .photo-frame img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .photo-frame .placeholder{
+    color:var(--red);
+    font-size:12px;
+    line-height:1.9;
+    letter-spacing:1px;
+  }
+  .sticker{
+    position:absolute;
+    font-size:52px;
+    line-height:1;
+    z-index:80;
+    filter:drop-shadow(2px 3px 2px rgba(0,0,0,0.35));
+    transform-origin:center 70%;
+    animation:
+      stickerPop .5s cubic-bezier(.34,1.56,.64,1) forwards,
+      stickerWiggle 1.4s ease-in-out .5s infinite;
+  }
+  .sticker-tl{ --rot:-14deg; top:-18px; left:-18px; }
+  .sticker-bl{ --rot:12deg; bottom:-18px; right:-18px; }
+  @keyframes stickerPop{
+    0%{ transform:scale(0) rotate(0deg); opacity:0; }
+    60%{ transform:scale(1.35) rotate(var(--rot)); opacity:1; }
+    100%{ transform:scale(1) rotate(var(--rot)); opacity:1; }
+  }
+  @keyframes stickerWiggle{
+    0%, 100%{ transform:scale(1) rotate(var(--rot)); }
+    50%{ transform:scale(1) rotate(calc(var(--rot) * -1)); }
+  }
+  .reveal-eyebrow{
+    color:var(--grey);
+    font-size:10.5px;
+    margin-bottom:9px;
+    letter-spacing:1px;
+  }
+  .reveal-name{
+    font-family:'DOSPilgi', monospace;
+    font-size:28px;
+    color:var(--red);
+    margin:4px 0 15px;
+  }
+  .reveal-desc{
+    font-size:12px;
+    line-height:2;
+    color:var(--ink);
+    white-space:pre-line;
+  }
+  .tie-note{
+    font-size:10.5px;
+    color:var(--grey);
+    margin-top:14px;
+  }
+  .result-actions{ margin-top:22px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+
+  /* --- 결과창 파티클 --- */
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <div class="status-bar">
+    <span class="carrier">🧭 SKZ</span>
+    <span class="status-icons">
+      <span class="signal-bars"><span></span><span></span><span></span><span></span></span>
+      <span class="battery"><span class="fill"></span></span>
+      <span id="clock">--:--</span>
+    </span>
+  </div>
+
+  <div class="screen-content">
+
+  <!-- START -->
+  <div id="screen-start">
+    <span class="deco d1">★</span>
+    <span class="deco d2">♥</span>
+    <span class="deco d3">♪</span>
+    <span class="deco d4">★</span>
+    <h1>내 취향의<br>SKZ 씨피는?</h1>
+    <p class="disclaimer">만든 이의 주관적 캐해 포함<br>틀릴 시: 미안해요😅</p>
+    <div class="sprite-box">🧭</div>
+    <button class="btn" onclick="startQuiz()">START</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="screen-quiz">
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-label" id="progressLabel">1 / 10</div>
+    </div>
+    <div class="q-num" id="qNum">Q1</div>
+    <div class="q-text" id="qText"></div>
+    <div class="options" id="qOptions"></div>
+    <div class="nav-row">
+      <button class="link-btn" id="backBtn" onclick="goBack()">← 이전 질문</button>
+      <span></span>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="screen-result">
+    <div class="reveal-card">
+      <div class="photo-frame" id="photoFrame">
+        <span class="sticker sticker-tl">🥟</span>
+        <span class="sticker sticker-bl" id="stickerAnimal"></span>
+        <span class="placeholder" id="photoPlaceholder">PHOTO<br>HERE</span>
+        <img id="resultPhoto" style="display:none;" alt="">
+      </div>
+      <div class="reveal-eyebrow" id="resultTag">RESULT</div>
+      <div class="reveal-name" id="resultName">황필</div>
+      <div class="reveal-desc" id="resultDesc"></div>
+      <div class="tie-note" id="tieNote"></div>
+    </div>
+    <div class="result-actions">
+      <button class="btn" onclick="restart()">RETRY</button>
+    </div>
+  </div>
+
+  </div>
+
+</div>
+
+<script>
+function updateClock(){
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  const el = document.getElementById('clock');
+  if(el) el.textContent = hh + ':' + mm;
+}
+updateClock();
+setInterval(updateClock, 1000 * 10);
+
+const W_HIGH = 1;
+const W_MID = 0.5;
+const W_LOW = 0.25;
+const W_TOP = 2.5;
+const W_UP = 1.5;
+function t(cp, tier){
+  const map = { 1:W_HIGH, 2:W_MID, 3:W_LOW, 4:W_TOP, 5:W_UP };
+  return { cp, w: map[tier] || W_HIGH };
+}
+
+const pairQuestionBank = {
+  "황필-현양": {
+    text: "그래도 좀 더 끌리는 온도는?",
+    options: [
+      { label: "편안하고 잔잔한, 오래 본 사이 같은 온도", cp: "황필" },
+      { label: "연상이 이끄는, 못 놓게 되는 애틋한 온도", cp: "현양" },
+    ]
+  },
+  "황밍-황창": {
+    text: "다투고 난 뒤, 더 끌리는 화해 방식은?",
+    options: [
+      { label: "능청스럽게 장난치면서 슬쩍 풀자고 함", cp: "황밍" },
+      { label: "까칠하게 굴다가도 결국 정색하고 얘기함", cp: "황창" },
+    ]
+  },
+  "황쳌-황승": {
+    text: "다투고 난 뒤, 더 끌리는 반응은?",
+    options: [
+      { label: "삐진 티 내면서 은근히 풀리길 기다림", cp: "황쳌" },
+      { label: "말없이 혼자 정리할 시간을 가진 뒤 돌아옴", cp: "황승" },
+    ]
+  },
+};
+
+const vibeMap = {
+  "황필": "편안하고 잔잔한 동갑 케미",
+  "현양": "연상이 다정하게 이끄는 애틋함",
+  "황밍": "장난기 많고 능청스러운 텐션",
+  "황창": "까칠한데 결국 다정한 반전",
+  "황쳌": "티키타카 배틀 케미",
+  "황승": "감정이 깊고 진중한 신뢰",
+  "황캥": "여유롭고 성숙한 어른 텐션",
+};
+
+function findTieBreakQuestion(cpA, cpB){
+  const bank = pairQuestionBank[cpA+"-"+cpB] || pairQuestionBank[cpB+"-"+cpA];
+  if(bank){
+    return { text: bank.text, options: bank.options.map(o => ({ label: o.label, tags: [t(o.cp,1)] })) };
+  }
+  return {
+    text: "그래도 좀 더 끌리는 쪽은?",
+    options: [
+      { label: vibeMap[cpA], tags: [t(cpA,1)] },
+      { label: vibeMap[cpB], tags: [t(cpB,1)] },
+    ]
+  };
+}
+
+function findSideOf(q, cp){
+  return q.options.findIndex(opt => opt.tags.some(tag => tag.cp === cp));
+}
+
+function pickDecisiveQuestion(cpA, cpB){
+  // 1순위: 이지선다 풀 중에서 두 씨피가 서로 다른 선택지로 갈리는 문항 찾기
+  for(const q of candidateTieQuestions){
+    const sideA = findSideOf(q, cpA);
+    const sideB = findSideOf(q, cpB);
+    if(sideA !== -1 && sideB !== -1 && sideA !== sideB){
+      return q;
+    }
+  }
+  // 2순위: 전용 페어 문항 (예: 황쳌-황승처럼 6문항으로 못 가르는 경우)
+  return findTieBreakQuestion(cpA, cpB);
+}
+
+function tally(ansArr, qArr){
+  const s = { "황필":0, "현양":0, "황밍":0, "황창":0, "황쳌":0, "황승":0, "황캥":0 };
+  ansArr.forEach((idx, i) => {
+    if(idx === undefined || !qArr[i]) return;
+    const q = qArr[i];
+    const opt = q.options[idx];
+    if(opt.tags){
+      opt.tags.forEach(({cp, w}) => {
+        if(q.decisiveFor && !q.decisiveFor.includes(cp)) return; // 결정타 문항은 1·2위만 득점
+        s[cp] += w;
+      });
+    }
+  });
+  Object.keys(s).forEach(k => { s[k] = Math.round(s[k] * 100) / 100; });
+  return s;
+}
+
+const questions = [
+  {
+    text: "선호하는 씨피의 분위기는?",
+    options: [
+      { label: "직진순애러브", tags: [t("황필",5), t("현양",5), t("황승",5)] },
+      { label: "달콤살벌코미디", tags: [t("황밍",5), t("황창",5), t("황쳌",3)] },
+      { label: "티격태격배틀호모", tags: [t("황쳌",5), t("황승",2)] },
+      { label: "당돌한 어른의 연애", tags: [t("황캥",5), t("황밍",3)] },
+    ]
+  },
+  {
+    text: "선호하는 씨피의 나이는?",
+    options: [
+      { label: "연하 × 연상", tags: [t("황밍",4), t("황창",4), t("황캥",4)] },
+      { label: "동갑", tags: [t("황승",4), t("황쳌",4), t("황필",4)] },
+      { label: "연상 × 연하", tags: [t("현양",4)] },
+    ]
+  },
+  {
+    text: "왼이 상대를 대하는 방식은?",
+    options: [
+      { label: "다정하게 챙겨준다", tags: [t("현양",1), t("황필",1), t("황승",3)] },
+      { label: "장난과 놀림으로 표현한다", tags: [t("황쳌",1), t("황밍",1), t("황승",2), t("황캥",1)] },
+      { label: "말은 까칠한데 행동이 다정하다", tags: [t("황창",1), t("황캥",2), t("황쳌",3)] },
+      { label: "솔직하지 못하고 밀어낸다", tags: [t("황쳌",2), t("황창",2), t("황밍",2)] },
+    ]
+  },
+  {
+    text: "관계에서 중요한 건?",
+    options: [
+      { label: "안정감", tags: [t("황필",2), t("황창",2), t("현양",1), t("황밍",3)] },
+      { label: "케미", tags: [t("황창",1), t("황밍",1), t("황쳌",1), t("황필",3)] },
+      { label: "특별함", tags: [t("황필",1), t("황캥",1), t("황승",3)] },
+      { label: "감정의 깊이", tags: [t("황승",1)] },
+    ]
+  },
+  {
+    text: "선호하는 모먼트는?",
+    options: [
+      { label: "무심한 다정함", tags: [t("황필",2), t("황승",1), t("황창",2), t("황밍",1)] },
+      { label: "질투하는 모습", tags: [t("현양",2), t("황필",3), t("황캥",3)] },
+      { label: "훅 들어오는 직진", tags: [t("황밍",2), t("황쳌",1), t("황창",3)] },
+      { label: "은근한 스킨십", tags: [t("황필",2), t("황쳌",2), t("황창",3), t("현양",1)] },
+    ]
+  },
+  {
+    text: "이상적인 관계는?",
+    options: [
+      { label: "서로에게 의지하는 관계", tags: [t("황창",1), t("황필",1), t("황밍",1), t("황캥",2)] },
+      { label: "장난치며 티격태격하는 관계", tags: [t("황밍",2), t("황쳌",2), t("황창",2)] },
+      { label: "서로를 성장시키는 관계", tags: [t("황쳌",1), t("황승",1), t("황캥",1), t("황필",2)] },
+      { label: "서로의 세상을 넓혀주는 관계", tags: [t("황쳌",2), t("현양",1), t("황승",2)] },
+    ]
+  },
+  {
+    text: "씨피의 평소 모습은?",
+    options: [
+      { label: "꽁냥꽁냥 붙어다님", tags: [t("황필",1), t("현양",2), t("황창",3), t("황승",3), t("황밍",3)] },
+      { label: "붙으면 티격대는데 떨어지진 않음", tags: [t("황승",1), t("황창",1)] },
+      { label: "서로 놀려 먹는 게 일상", tags: [t("황쳌",1), t("황밍",1)] },
+      { label: "안정형 여유 바이브", tags: [t("황캥",1), t("황창",2), t("현양",2), t("황필",3)] },
+    ]
+  },
+  {
+    text: "데이트 코스 정할 때, 둘은?",
+    options: [
+      { label: "한쪽이 거의 다 정함", tags: [t("현양",1), t("황캥",1)] },
+      { label: "서로 상대가 좋다는 거 다 함", tags: [t("황필",1), t("황승",1), t("황밍",2), t("황캥",2), t("현양",3)] },
+      { label: "같이 정하는 게 재밌음", tags: [t("황밍",1), t("황쳌",3), t("황승",2), t("황캥",3), t("황필",2)] },
+      { label: "즉흥, 계획 없이 발길 닿는 대로", tags: [t("황창",1), t("황쳌",1)] },
+    ]
+  },
+  {
+    text: "싸우고 나서 왼의 반응은?",
+    options: [
+      { label: "일단 붙잡고 절대 안 놓음, 말이 아니라 몸으로", tags: [t("현양",1), t("황캥",3)] },
+      { label: "삐져서 은근히 풀리길 기다림", tags: [t("황쳌",1), t("황밍",3)] },
+      { label: "\"우리 얘기 좀 해\" 정색하고 대화 시도", tags: [t("황필",1), t("황창",1), t("현양",2)] },
+      { label: "일단 잠수, 정리할 시간 필요", tags: [t("황밍",1), t("황승",1), t("황캥",1)] },
+    ]
+  },
+];
+
+// 동점일 때 결정타로 쓰일 이지선다 후보 풀 (10번째 문항용)
+const candidateTieQuestions = [
+  {
+    text: "둘의 연애는?",
+    options: [
+      { label: "친구 같은 연애", tags: [t("황승",1), t("황쳌",1), t("황필",1)] },
+      { label: "이미 부부", tags: [t("황캥",1), t("황창",1), t("황밍",1)] },
+    ]
+  },
+  {
+    text: "스킨십에 더 적극적인 쪽은?",
+    options: [
+      { label: "왼", tags: [t("현양",1), t("황승",1)] },
+      { label: "른", tags: [t("황밍",1), t("황창",1), t("황필",1)] },
+    ]
+  },
+  {
+    text: "둘의 연락 스타일은?",
+    options: [
+      { label: "시시콜콜 자주 한다", tags: [t("황창",1), t("황밍",1), t("황승",1)] },
+      { label: "필요할 때 주로 한다", tags: [t("현양",1), t("황캥",1)] },
+    ]
+  },
+  {
+    text: "른이 질투가 나면?",
+    options: [
+      { label: "티를 낸다", tags: [t("현양",1), t("황밍",1), t("황창",1), t("황쳌",1)] },
+      { label: "숨긴다", tags: [t("황필",1), t("황캥",1), t("황승",1)] },
+    ]
+  },
+  {
+    text: "주변 사람들이 보는 둘은?",
+    options: [
+      { label: "친구 같아 보인다", tags: [t("황승",1), t("황쳌",1), t("황밍",1)] },
+      { label: "연인 티가 너무 난다", tags: [t("황창",1), t("황필",1), t("현양",1)] },
+    ]
+  },
+];
+
+const cpInfo = {
+  "황필": {
+    desc: "겉으론 잔잔하고 안정적인데, 은근히 서로를 시험하는 긴장감이 있는 커플.\n다정한데 만만하지 않고, 편안한데 지루하지가 않아.\n말보단 눈빛으로 확인하는 사이에 가까움."
+  },
+  "현양": {
+    desc: "연상 쪽이 다정하게 이끌고, 왼은 한 번 붙잡으면 절대 놓지 않는 타입.\n꽁냥꽁냥한 순애 그 자체지만, 그 안에 은근한 소유욕이 깔려있음.\n보고 있으면 심장이 편안해지는데 가끔 훅 조여오는 느낌."
+  },
+  "황밍": {
+    desc: "장난과 놀림이 애정표현인 커플. 밀어내는 것 같은데 결국 옆에 붙어있음.\n케미가 터지는 게 제일 큰 매력이고, 싸우고 나면 서로 잠수 탔다가 슬그머니 화해함.\n달달함과 살벌함이 반씩 섞인 코미디 라인."
+  },
+  "황창": {
+    desc: "말은 까칠하게 하는데 행동은 다정한, 전형적인 츤데레 온도차 커플.\n붙으면 계속 티격대는데 떨어지진 않고, 즉흥적으로 움직이는 편.\n싸워도 결국 정색하고 대화로 풀 줄 아는, 은근히 건강한 케미."
+  },
+  "황쳌": {
+    desc: "서로 놀려먹는 게 일상인 배틀형 커플. 밀어내는 척 하면서 계속 신경 씀.\n싸우면 삐져서 조용히 풀리길 기다리는 타입이라 은근 귀여움.\n케미와 개그가 관계의 8할."
+  },
+  "황승": {
+    desc: "동갑 친구 같은 케미인데 감정의 깊이는 누구보다 진지한 커플.\n까칠한 듯 붙어다니고, 싸우면 각자 정리할 시간이 필요한 신중한 타입.\n겉바속촉의 정석."
+  },
+  "황캥": {
+    desc: "어른스럽고 여유로운 분위기 속에 숨겨진 텐션이 매력인 커플.\n데이트 코스도 왼이 능숙하게 이끌지만, 한 번 붙잡으면 놓지 않는 집중력이 있음.\n섹시함과 안정감을 동시에 갖춘 라인."
+  },
+};
+
+let current = 0;
+let answers = [];
+let scores = {};
+let activeQuestions = [];
+const BASE_COUNT = questions.length; // 9
+const TOTAL_DISPLAY = BASE_COUNT + 1; // 결정타 문항이 항상 붙으므로 10
+
+function startQuiz(){
+  document.getElementById('screen-start').style.display = 'none';
+  document.getElementById('screen-quiz').style.display = 'flex';
+  current = 0;
+  answers = [];
+  activeQuestions = questions.slice();
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const q = activeQuestions[current];
+  const total = TOTAL_DISPLAY; // 결정타 문항이 항상 붙으므로 총 10문항 고정 표시
+  document.getElementById('qNum').textContent = 'Q' + (current+1);
+  document.getElementById('qText').textContent = q.text;
+  document.getElementById('progressFill').style.width = ((current)/total*100) + '%';
+  document.getElementById('progressLabel').textContent = (current+1) + ' / ' + total;
+  document.getElementById('backBtn').style.visibility = current === 0 ? 'hidden' : 'visible';
+
+  const wrap = document.getElementById('qOptions');
+  wrap.innerHTML = '';
+  const marks = ['A','B','C','D'];
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = '<span class="mark">'+marks[i]+'</span>' + opt.label;
+    btn.onclick = () => selectOption(i);
+    wrap.appendChild(btn);
+  });
+}
+
+function selectOption(i){
+  answers[current] = i;
+  current++;
+
+  // 기본 9문항이 끝나면 매번 1·2위 결정타 문항을 10번째로 추가
+  if(current === BASE_COUNT && activeQuestions.length === BASE_COUNT){
+    const prelim = tally(answers.slice(0, BASE_COUNT), questions);
+    const sorted = Object.entries(prelim).sort((a,b) => b[1]-a[1]);
+    const [firstCp] = sorted[0];
+    const [secondCp] = sorted[1];
+    const q = pickDecisiveQuestion(firstCp, secondCp);
+    q.decisiveFor = [firstCp, secondCp]; // 이 문항은 1·2위 두 씨피만 득점
+    activeQuestions.push(q);
+  }
+
+  if(current < activeQuestions.length){
+    renderQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function goBack(){
+  if(current > 0){
+    current--;
+    // 기본 문항 구간으로 되돌아가면, 붙여뒀던 갈림 문항은 무효화(다음 진행 시 재판단)
+    if(current < BASE_COUNT && activeQuestions.length > BASE_COUNT){
+      activeQuestions = activeQuestions.slice(0, BASE_COUNT);
+    }
+    renderQuestion();
+  }
+}
+
+function computeScores(){
+  scores = tally(answers, activeQuestions);
+}
+
+function showResult(){
+  computeScores();
+  document.getElementById('screen-quiz').style.display = 'none';
+  document.getElementById('screen-result').style.display = 'flex';
+
+  const entries = Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+  const top = entries[0];
+  const topScore = top[1];
+  const winners = entries.filter(e => e[1] === topScore).map(e => e[0]);
+
+  document.getElementById('resultName').textContent = winners.join(' & ');
+  document.getElementById('resultDesc').textContent = cpInfo[winners[0]].desc;
+
+  const img = document.getElementById('resultPhoto');
+  const placeholder = document.getElementById('photoPlaceholder');
+  img.style.display = 'none';
+  placeholder.style.display = 'block';
+  img.onerror = () => { img.style.display = 'none'; placeholder.style.display = 'block'; };
+  img.onload = () => { img.style.display = 'block'; placeholder.style.display = 'none'; };
+  img.src = 'SKZCP/Image/' + (imageCodeMap[winners[0]] || winners[0]) + '.jpg';
+
+  document.getElementById('tieNote').textContent = winners.length > 1
+    ? '동점 씨피가 있어서 같이 뽑혔어요 (' + winners.join(', ') + ')'
+    : '';
+
+  const animalSticker = document.getElementById('stickerAnimal');
+  const emojiForWinner = (animalMap[winners[0]] || ['✨'])[0];
+  // 재애니메이션을 위해 DOM에서 잠깐 떼었다 다시 붙임 (같은 씨피가 다시 나와도 팝인 재생)
+  animalSticker.textContent = emojiForWinner;
+  animalSticker.style.animation = 'none';
+  void animalSticker.offsetWidth;
+  animalSticker.style.animation = '';
+}
+
+const animalMap = {
+  "황캥": ["🐺"],
+  "황밍": ["🐰"],
+  "황창": ["🐖","🐇"],
+  "황쳌": ["🐿"],
+  "황필": ["🐤"],
+  "황승": ["🐶"],
+  "현양": ["🦊"],
+};
+
+// SKZCP/Image/ 안의 파일명 규칙: 황=hw, 현=hy + 상대 이름 초성 로마자
+const imageCodeMap = {
+  "황필": "hwf",
+  "현양": "hy",
+  "황밍": "hwm",
+  "황창": "hwc",
+  "황쳌": "hwq",
+  "황승": "hws",
+  "황캥": "hwk",
+};
+
+function restart(){
+  document.getElementById('screen-result').style.display = 'none';
+  document.getElementById('screen-start').style.display = 'flex';
+}
+</script>
+</body>
+</html>
