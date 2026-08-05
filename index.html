@@ -270,8 +270,8 @@
 
   /* --- result screen --- */
   #screen-result{ display:none; flex:1; flex-direction:column; align-items:center; text-align:center; position:relative; }
-  .deco.r1{ top:0%; left:4%; font-size:18px; animation-delay:.2s; z-index:95; }
-  .deco.r2{ top:4%; right:5%; font-size:22px; animation-delay:.8s; z-index:95; }
+  .deco.r1{ top:14%; left:4%; font-size:18px; animation-delay:.2s; z-index:95; }
+  .deco.r2{ top:16%; right:5%; font-size:22px; animation-delay:.8s; z-index:95; }
   .deco.r3{ bottom:22%; left:6%; font-size:18px; animation-delay:1.3s; }
   .deco.r4{ bottom:16%; right:8%; font-size:16px; animation-delay:1.8s; }
   .reveal-card{
@@ -462,9 +462,13 @@ const W_MID = 0.5;
 const W_LOW = 0.25;
 const W_TOP = 2.5;
 const W_UP = 1.5;
+const W_DECISIVE = 2;
 function t(cp, tier){
-  const map = { 1:W_HIGH, 2:W_MID, 3:W_LOW, 4:W_TOP, 5:W_UP };
-  return { cp, w: map[tier] || W_HIGH };
+  const map = { 1:W_HIGH, 2:W_MID, 3:W_LOW, 4:W_TOP, 5:W_UP, 6:W_DECISIVE };
+  const abs = Math.abs(tier);
+  const magnitude = map[abs] || W_HIGH;
+  const w = tier < 0 ? -magnitude : magnitude;
+  return { cp, w };
 }
 
 const pairQuestionBank = {
@@ -504,13 +508,13 @@ const vibeMap = {
 function findTieBreakQuestion(cpA, cpB){
   const bank = pairQuestionBank[cpA+"-"+cpB] || pairQuestionBank[cpB+"-"+cpA];
   if(bank){
-    return { text: bank.text, options: bank.options.map(o => ({ label: o.label, tags: [t(o.cp,5)] })) };
+    return { text: bank.text, options: bank.options.map(o => ({ label: o.label, tags: [t(o.cp,6)] })) };
   }
   return {
     text: "그래도 좀 더 끌리는 쪽은?",
     options: [
-      { label: vibeMap[cpA], tags: [t(cpA,5)] },
-      { label: vibeMap[cpB], tags: [t(cpB,5)] },
+      { label: vibeMap[cpA], tags: [t(cpA,6)] },
+      { label: vibeMap[cpB], tags: [t(cpB,6)] },
     ]
   };
 }
@@ -549,14 +553,49 @@ function tally(ansArr, qArr){
   return s;
 }
 
+// 기본 9문항 중 특정 CP가 태그된 선택지를 고른 횟수 (일관성 측정용, 부호와 무관하게 카운트)
+function countPicks(ansArr){
+  const c = { "황필":0, "현양":0, "황밍":0, "황창":0, "황쳌":0, "황승":0, "황캥":0 };
+  const limit = Math.min(ansArr.length, BASE_COUNT);
+  for(let i = 0; i < limit; i++){
+    const idx = ansArr[i];
+    if(idx === undefined || !questions[i]) continue;
+    const opt = questions[i].options[idx];
+    if(!opt.tags) continue;
+    const seen = new Set();
+    opt.tags.forEach(({cp}) => seen.add(cp));
+    seen.forEach(cp => { c[cp] += 1; });
+  }
+  return c;
+}
+
+// 선택횟수 보정치: 3회 이하 +0, 4~5회 +0.25, 6~7회 +0.5, 8회 이상 +1.0
+function consistencyBonus(count){
+  if(count <= 3) return 0;
+  if(count <= 5) return 0.25;
+  if(count <= 7) return 0.5;
+  return 1.0;
+}
+
+// 가중치 합산 + 선택횟수 보정을 더한 최종 점수 (0점 이하로도 내려갈 수 있음)
+function scoreWithBonus(ansArr, qArr){
+  const base = tally(ansArr, qArr);
+  const counts = countPicks(ansArr);
+  const combined = {};
+  Object.keys(base).forEach(cp => {
+    combined[cp] = Math.round((base[cp] + consistencyBonus(counts[cp])) * 100) / 100;
+  });
+  return combined;
+}
+
 const questions = [
   {
     text: "선호하는 CP의 분위기는?",
     options: [
       { label: "직진순애러브", tags: [t("황필",5), t("현양",5), t("황승",5)] },
-      { label: "달콤살벌코미디", tags: [t("황밍",5), t("황창",5), t("황쳌",3)] },
-      { label: "티격태격배틀호모", tags: [t("황쳌",5), t("황승",2)] },
-      { label: "당돌한 어른의 연애", tags: [t("황캥",5), t("황밍",3)] },
+      { label: "달콤살벌로맨스코미디", tags: [t("황밍",5), t("황창",5), t("황쳌",3)] },
+      { label: "티격태격배틀호모", tags: [t("황쳌",5), t("황승",1)] },
+      { label: "당돌한 어른의 연애", tags: [t("황캥",5), t("황창",1), t("황밍",3), t("황필",-3), t("황쳌",-3)] },
     ]
   },
   {
@@ -570,64 +609,64 @@ const questions = [
   {
     text: "왼이 상대를 대하는 방식은?",
     options: [
-      { label: "다정하게 챙겨준다", tags: [t("현양",1), t("황필",1), t("황승",3)] },
-      { label: "장난과 놀림으로 표현한다", tags: [t("황쳌",1), t("황밍",1), t("황승",2), t("황캥",1)] },
-      { label: "말은 까칠한데 행동이 다정하다", tags: [t("황창",1), t("황캥",2), t("황쳌",3)] },
-      { label: "솔직하지 못하고 밀어낸다", tags: [t("황쳌",2), t("황창",2), t("황밍",2)] },
+      { label: "다정하게 챙겨준다", tags: [t("현양",1), t("황필",1), t("황승",3), t("황캥",1), t("황쳌",-2)] },
+      { label: "장난과 놀림으로 표현한다", tags: [t("황쳌",1), t("황밍",1), t("황승",2), t("황캥",1), t("현양",2)] },
+      { label: "말은 까칠한데 행동이 다정하다", tags: [t("황창",2), t("황캥",2), t("황쳌",3), t("황밍",3)] },
+      { label: "솔직하지 못하고 밀어낸다", tags: [t("황쳌",2), t("황창",1), t("황밍",3), t("황승",3), t("황필",-1), t("현양",-1)] },
     ]
   },
   {
     text: "관계에서 중요한 건?",
     options: [
-      { label: "안정감", tags: [t("황필",2), t("황창",2), t("현양",1), t("황밍",3)] },
+      { label: "안정감", tags: [t("황필",1), t("황창",2), t("현양",2), t("황밍",3), t("황쳌",-3)] },
       { label: "케미", tags: [t("황창",1), t("황밍",1), t("황쳌",1), t("황필",3)] },
-      { label: "특별함", tags: [t("황필",1), t("황캥",1), t("황승",3)] },
+      { label: "특별함", tags: [t("황필",2), t("황캥",1), t("황승",3), t("현양",2)] },
       { label: "감정의 깊이", tags: [t("황승",1)] },
     ]
   },
   {
     text: "선호하는 CP 모먼트는?",
     options: [
-      { label: "무심한 다정함", tags: [t("황필",2), t("황승",1), t("황창",2), t("황밍",1)] },
-      { label: "질투하는 모습", tags: [t("현양",2), t("황필",3), t("황캥",3)] },
-      { label: "훅 들어오는 직진", tags: [t("황밍",2), t("황쳌",1), t("황창",3)] },
-      { label: "은근한 스킨십", tags: [t("황필",2), t("황쳌",2), t("황창",3), t("현양",1)] },
+      { label: "무심한 다정함", tags: [t("황필",2), t("황승",1), t("황창",2), t("황밍",1), t("황캥",2)] },
+      { label: "질투하는 모습", tags: [t("현양",1), t("황필",3), t("황캥",2), t("황승",3), t("황창",3)] },
+      { label: "훅 들어오는 직진", tags: [t("황밍",2), t("황쳌",1), t("황창",1)] },
+      { label: "은근한 스킨십", tags: [t("황필",1), t("황쳌",2), t("황창",3), t("현양",1)] },
     ]
   },
   {
     text: "이상적인 관계는?",
     options: [
-      { label: "서로에게 의지하는 관계", tags: [t("황창",1), t("황필",1), t("황밍",1), t("황캥",2)] },
-      { label: "장난치며 티격태격하는 관계", tags: [t("황밍",2), t("황쳌",2), t("황창",2)] },
-      { label: "서로를 성장시키는 관계", tags: [t("황쳌",1), t("황승",1), t("황캥",1), t("황필",2)] },
-      { label: "서로의 세상을 넓혀주는 관계", tags: [t("황쳌",2), t("현양",1), t("황승",2)] },
+      { label: "서로 의지할 수 있는 관계", tags: [t("황창",1), t("황필",1), t("황밍",3), t("황캥",2)] },
+      { label: "편하게 티키타카하는 관계", tags: [t("황밍",1), t("황쳌",3), t("황창",2), t("현양",3), t("황캥",-2)] },
+      { label: "서로를 성장시키는 관계", tags: [t("황쳌",5), t("황승",1), t("황캥",2), t("현양",3)] },
+      { label: "서로의 세상을 넓혀주는 관계", tags: [t("현양",1), t("황승",2), t("황캥",2), t("황필",3)] },
     ]
   },
   {
     text: "CP의 평소 모습은?",
     options: [
-      { label: "꽁냥꽁냥 붙어다님", tags: [t("황필",1), t("현양",2), t("황창",3), t("황승",3), t("황밍",3)] },
-      { label: "붙으면 티격대는데 떨어지진 않음", tags: [t("황승",1), t("황창",1)] },
-      { label: "서로 놀려 먹는 게 일상", tags: [t("황쳌",1), t("황밍",1)] },
-      { label: "안정형 여유 바이브", tags: [t("황캥",1), t("황창",2), t("현양",2), t("황필",3)] },
+      { label: "꽁냥꽁냥 붙어다님", tags: [t("황필",1), t("현양",2), t("황창",3), t("황승",3)] },
+      { label: "붙으면 티격대는데 떨어지진 않음", tags: [t("황승",1), t("황창",1), t("황쳌",2)] },
+      { label: "서로 놀려 먹는 게 일상", tags: [t("황쳌",1), t("황밍",1), t("현양",3), t("황창",2)] },
+      { label: "안정형 여유 바이브", tags: [t("황캥",2), t("황창",2), t("현양",2), t("황필",3)] },
     ]
   },
   {
     text: "데이트 코스 정할 때, 둘은?",
     options: [
-      { label: "한쪽이 거의 다 정함", tags: [t("현양",1), t("황캥",1)] },
-      { label: "서로 상대가 좋다는 거 다 함", tags: [t("황필",1), t("황승",1), t("황밍",2), t("황캥",2), t("현양",3)] },
-      { label: "같이 정하는 게 재밌음", tags: [t("황밍",1), t("황쳌",3), t("황승",2), t("황캥",3), t("황필",2)] },
-      { label: "즉흥, 계획 없이 발길 닿는 대로", tags: [t("황창",1), t("황쳌",1)] },
+      { label: "한쪽이 거의 다 정함", tags: [t("현양",1), t("황캥",1), t("황창",-1), t("황쳌",-1)] },
+      { label: "상대가 좋다는 거 다 함", tags: [t("황필",1), t("황승",1), t("황밍",2), t("황캥",2), t("현양",2)] },
+      { label: "같이 정하는 게 재밌음", tags: [t("황밍",1), t("황쳌",3), t("황승",2), t("황필",2), t("현양",3)] },
+      { label: "즉흥, 계획 없이 발길 닿는 대로", tags: [t("황창",1), t("황쳌",1), t("황밍",3), t("현양",-1), t("황캥",-1)] },
     ]
   },
   {
     text: "싸우고 나서 른의 반응은?",
     options: [
-      { label: "일단 붙잡고 안 놓아줌, 말이 아니라 몸으로", tags: [t("현양",1), t("황캥",3)] },
-      { label: "삐져서 은근히 풀리길 기다림", tags: [t("황쳌",1), t("황밍",3)] },
-      { label: "\"우리 얘기 좀 해\" 정색하고 대화 시도", tags: [t("황필",1), t("황창",1), t("현양",2)] },
-      { label: "일단 잠수, 정리할 시간 필요", tags: [t("황밍",1), t("황승",1), t("황캥",1)] },
+      { label: "일단 붙잡고 안 놓아줌, 말이 아니라 몸으로", tags: [t("현양",2), t("황밍",2), t("황캥",3), t("황승",-1)] },
+      { label: "삐져서 은근히 풀리길 기다림", tags: [t("황쳌",1), t("황밍",3), t("현양",3)] },
+      { label: "\"우리 얘기 좀 해\" 정색하고 대화 시도", tags: [t("황필",1), t("황창",1), t("현양",2), t("황캥",1)] },
+      { label: "일단 잠수, 정리할 시간 필요", tags: [t("황밍",2), t("황승",1), t("황캥",2), t("황쳌",2)] },
     ]
   },
 ];
@@ -637,36 +676,36 @@ const candidateTieQuestions = [
   {
     text: "둘의 연애는?",
     options: [
-      { label: "친구 같은 연애", tags: [t("황승",5), t("황쳌",5), t("황필",5)] },
-      { label: "이미 부부", tags: [t("황캥",5), t("황창",5), t("황밍",5)] },
+      { label: "친구 같은 연애", tags: [t("황승",6), t("황쳌",6), t("황필",6)] },
+      { label: "이미 부부", tags: [t("황캥",6), t("황창",6), t("황밍",6)] },
     ]
   },
   {
     text: "스킨십에 더 적극적인 쪽은?",
     options: [
-      { label: "왼", tags: [t("현양",5), t("황승",5)] },
-      { label: "른", tags: [t("황밍",5), t("황창",5), t("황필",5)] },
+      { label: "왼", tags: [t("현양",6), t("황승",6)] },
+      { label: "른", tags: [t("황밍",6), t("황창",6), t("황필",6), t("황캥",6)] },
     ]
   },
   {
     text: "둘의 연락 스타일은?",
     options: [
-      { label: "시시콜콜 자주 한다", tags: [t("황창",5), t("황밍",5), t("황승",5)] },
-      { label: "필요할 때 주로 한다", tags: [t("현양",5), t("황캥",5)] },
+      { label: "시시콜콜 자주 한다", tags: [t("황창",6), t("황밍",6), t("황승",6)] },
+      { label: "필요할 때 주로 한다", tags: [t("현양",6), t("황캥",6)] },
     ]
   },
   {
     text: "른이 질투가 나면?",
     options: [
-      { label: "티를 낸다", tags: [t("현양",5), t("황밍",5), t("황창",5), t("황쳌",5)] },
-      { label: "숨긴다", tags: [t("황필",5), t("황캥",5), t("황승",5)] },
+      { label: "티가 난다", tags: [t("현양",6), t("황밍",6), t("황쳌",6)] },
+      { label: "티나지 않는다", tags: [t("황필",6), t("황캥",6), t("황승",6)] },
     ]
   },
   {
     text: "주변 사람들이 보는 둘은?",
     options: [
-      { label: "친구 같아 보인다", tags: [t("황승",5), t("황쳌",5), t("황밍",5)] },
-      { label: "연인 티가 너무 난다", tags: [t("황창",5), t("황필",5), t("현양",5)] },
+      { label: "친구 같아 보인다", tags: [t("황승",6), t("황쳌",6), t("황밍",6)] },
+      { label: "연인 티가 너무 난다", tags: [t("황창",6), t("황필",6), t("현양",6), t("황캥",6)] },
     ]
   },
 ];
@@ -704,7 +743,7 @@ const TOTAL_DISPLAY = BASE_COUNT + 1; // 결정타 문항이 항상 붙으므로
 const MAX_QUESTIONS = 14; // 동점 연장 시 무한 루프 방지용 안전장치
 
 function appendDecisiveQuestion(){
-  const s = tally(answers, activeQuestions);
+  const s = scoreWithBonus(answers, activeQuestions);
   const sorted = Object.entries(s).sort((a,b) => b[1]-a[1]);
   const [firstCp] = sorted[0];
   const [secondCp] = sorted[1];
@@ -756,7 +795,7 @@ function selectOption(i){
     activeQuestions.length < MAX_QUESTIONS
   ){
     // 결정타 문항까지 다 풀었는데도 여전히 동점이면 한 문항 더 연장
-    const s = tally(answers, activeQuestions);
+    const s = scoreWithBonus(answers, activeQuestions);
     const sorted = Object.entries(s).sort((a,b) => b[1]-a[1]);
     if(sorted[0][1] === sorted[1][1]){
       appendDecisiveQuestion();
@@ -782,7 +821,7 @@ function goBack(){
 }
 
 function computeScores(){
-  scores = tally(answers, activeQuestions);
+  scores = scoreWithBonus(answers, activeQuestions);
 }
 
 function showResult(){
